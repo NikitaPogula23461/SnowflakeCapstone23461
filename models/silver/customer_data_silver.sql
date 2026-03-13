@@ -6,22 +6,17 @@ WHERE dbt_valid_to IS NULL
  
 ),
  
-cleaned AS (
+cleaned_birthdate AS (
  
 SELECT
  
 TRIM(customer_id) AS customer_id,
  
- --Capitalizing Name 
- 
 INITCAP(TRIM(first_name)) AS first_name,
 INITCAP(TRIM(last_name)) AS last_name,
  
- --Full name column
-INITCAP(TRIM(first_name)) || ' ' || INITCAP(TRIM(last_name))
-    AS full_name,
+INITCAP(TRIM(first_name)) || ' ' || INITCAP(TRIM(last_name)) AS full_name,
  
---email validation
 LOWER(TRIM(email)) AS email,
  
 CASE
@@ -30,53 +25,36 @@ CASE
     ELSE NULL
 END AS valid_email,
  
- 
---Phone Number
- 
 REGEXP_REPLACE(phone,'[^0-9]','') AS phone_number,
  
 CASE
-    WHEN LENGTH(REGEXP_REPLACE(phone,'[^0-9]','')) BETWEEN 10 AND 15
-    THEN REGEXP_REPLACE(phone,'[^0-9]','')
+    WHEN LENGTH(phone_number) = 11 AND LEFT(phone_number,1) = '1'
+    THEN SUBSTRING(phone_number,2)
+ 
+    WHEN LENGTH(phone_number) = 10 AND LEFT(phone_number,1) = '1'
+    THEN NULL
+ 
+    WHEN LENGTH(phone_number) = 10
+    THEN phone_number
+ 
     ELSE NULL
 END AS valid_phone,
  
---Dates
+/* BIRTHDATE FORMAT STANDARDIZATION */
  
-TRY_TO_DATE(birth_date) AS birth_date,
+COALESCE(
+    TRY_TO_DATE(birth_date,'DD-MM-YYYY'),
+    TRY_TO_DATE(birth_date,'YYYY-MM-DD'),
+    TRY_TO_DATE(birth_date,'MM/DD/YYYY')
+) AS birth_date,
+ 
 TRY_TO_DATE(registration_date) AS registration_date,
 TRY_TO_DATE(last_purchase_date) AS last_purchase_date,
 TRY_TO_DATE(last_modified_date) AS last_modified_date,
-  
---Age Segment
- 
-CASE
-    WHEN TRY_TO_DATE(birth_date) IS NOT NULL
-    THEN DATEDIFF(year, TRY_TO_DATE(birth_date), CURRENT_DATE)
-    ELSE NULL
-END AS customer_age,
- 
-CASE
-WHEN TRY_TO_DATE(birth_date) IS NULL
-    THEN 'Unknown'
- 
-WHEN DATEDIFF(year, TRY_TO_DATE(birth_date), CURRENT_DATE) BETWEEN 18 AND 35
-    THEN 'Young'
- 
-WHEN DATEDIFF(year, TRY_TO_DATE(birth_date), CURRENT_DATE) BETWEEN 36 AND 55
-    THEN 'Middle-aged'
- 
-WHEN DATEDIFF(year, TRY_TO_DATE(birth_date), CURRENT_DATE) > 55
-    THEN 'Senior'
- 
-ELSE 'Unknown'
- 
-END AS customer_segment,
  
 COALESCE(TRY_TO_NUMBER(total_purchases),0) AS total_purchases,
 COALESCE(TRY_TO_NUMBER(total_spend),0) AS total_spend,
  
-
 UPPER(TRIM(income_bracket)) AS income_bracket,
 UPPER(TRIM(loyalty_tier)) AS loyalty_tier,
  
@@ -99,7 +77,43 @@ dbt_updated_at
  
 FROM source_data
  
+),
+ 
+final_cleaned AS (
+ 
+SELECT
+*,
+ 
+/* AGE CALCULATION USING CLEANED BIRTHDATE */
+ 
+CASE
+    WHEN birth_date IS NOT NULL
+    THEN DATEDIFF(year, birth_date, CURRENT_DATE)
+    ELSE NULL
+END AS customer_age,
+ 
+/* CUSTOMER SEGMENT */
+ 
+CASE
+WHEN birth_date IS NULL
+    THEN 'Unknown'
+ 
+WHEN DATEDIFF(year, birth_date, CURRENT_DATE) BETWEEN 18 AND 35
+    THEN 'Young'
+ 
+WHEN DATEDIFF(year, birth_date, CURRENT_DATE) BETWEEN 36 AND 55
+    THEN 'Middle-aged'
+ 
+WHEN DATEDIFF(year, birth_date, CURRENT_DATE) > 55
+    THEN 'Senior'
+ 
+ELSE 'Unknown'
+ 
+END AS customer_segment
+ 
+FROM cleaned_birthdate
+ 
 )
  
 SELECT *
-FROM cleaned
+FROM final_cleaned
