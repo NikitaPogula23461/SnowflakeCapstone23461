@@ -8,40 +8,38 @@ FROM {{ ref('orders_data_silver') }}
  
 SELECT
  
-/* DateKey */
+--Date key
 TO_NUMBER(TO_CHAR(full_date,'YYYYMMDD')) AS datekey,
  
-/* Full Date */
+
 full_date,
  
-/* Year */
+
 YEAR(full_date) AS year,
  
-/* Quarter */
+
 QUARTER(full_date) AS quarter,
  
-/* Month */
+
 MONTH(full_date) AS month,
  
-/* Week */
 WEEK(full_date) AS week,
- 
-/* Day of Week */
+
+
 DAYNAME(full_date) AS day_of_week,
  
-/* Holiday Flag (Basic US holidays) */
+--Holiday Flag(US HOlidays)
 CASE
-WHEN TO_CHAR(full_date,'MM-DD') IN ('01-01','07-04','12-25')
-THEN TRUE
-ELSE FALSE
+    WHEN TO_CHAR(full_date,'MM-DD') IN ('01-01','07-04','12-25') THEN TRUE
+    ELSE FALSE
 END AS holiday_flag,
  
-/* Season */
+--Season
 CASE
-WHEN MONTH(full_date) IN (12,1,2) THEN 'Winter'
-WHEN MONTH(full_date) IN (3,4,5) THEN 'Spring'
-WHEN MONTH(full_date) IN (6,7,8) THEN 'Summer'
-ELSE 'Fall'
+    WHEN MONTH(full_date) IN (12,1,2) THEN 'Winter'
+    WHEN MONTH(full_date) IN (3,4,5,6) THEN 'Spring'
+    WHEN MONTH(full_date) IN (7,8,9) THEN 'Summer'
+    WHEN MONTH(full_date) IN (10,11) THEN 'Autumn'
 END AS season
  
 FROM dates

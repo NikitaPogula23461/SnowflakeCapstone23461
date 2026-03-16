@@ -4,7 +4,7 @@ WITH source_data AS (
     WHERE dbt_valid_to IS NULL
 ),
  
-clean_employee AS (
+cleaned_employee AS (
     SELECT
         TRIM(employee_id) AS employee_id,
  
@@ -93,7 +93,7 @@ employee_final AS (
             THEN (s.total_sales_amount / e.sales_target) * 100
             ELSE NULL
         END AS target_achievement_percentage
-    FROM clean_employee e
+    FROM cleaned_employee e
     LEFT JOIN employee_sales s
         ON e.employee_id = s.employee_id
 )

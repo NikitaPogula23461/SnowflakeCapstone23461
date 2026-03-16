@@ -1,18 +1,21 @@
 SELECT
  
-/* Surrogate Key */
+--Surrogate key
 ROW_NUMBER() OVER (ORDER BY campaign_id) AS campaignkey,
  
-/* Business Key */
+--CampaignID
 campaign_id AS campaignid,
  
-/* Dimension Attributes */
+--Target Audience Segment
 audience_segment AS target_audience_segment,
  
+--Budget
 budget,
  
+--Duration
 campaign_duration_days AS duration,
  
+--ROI
 expected_roi AS roi,
  
 start_date,

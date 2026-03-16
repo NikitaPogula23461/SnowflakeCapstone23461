@@ -1,35 +1,31 @@
 SELECT
  
-/* Surrogate Key */
+--Customer Key
 ROW_NUMBER() OVER (ORDER BY customer_id, dbt_valid_from) AS customerkey,
- 
-/* Business Key */
+
 customer_id,
- 
-/* Full Name */
+
+--Full name 
 first_name || ' ' || last_name AS full_name,
  
-/* Contact */
 valid_email AS email,
+
 valid_phone AS phone,
  
-/* Address */
+--Address
 city,
 state,
 country,
- 
-/* Demographics */
- 
+
+--Demographic information 
 birth_date,
 customer_age,
  
-/* Segment */
 customer_segment,
  
-/* Registration */
 registration_date,
- 
-/* SCD Type 2 tracking */
+
+--SCD Type 2 tracking 
 dbt_valid_from AS start_date,
 dbt_valid_to AS end_date,
  

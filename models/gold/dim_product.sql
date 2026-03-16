@@ -1,26 +1,22 @@
 SELECT
- 
-/* Surrogate Key */
+
+--Product key
 ROW_NUMBER() OVER (ORDER BY product_id) AS productkey,
  
-/* Business Key */
 product_id,
- 
-/* Product Details */
+
 product_name,
 category,
 subcategory,
 brand,
+reorder_level,
  
-/* Attributes */
 color,
 size,
  
-/* Pricing */
 unit_price,
 cost_price,
- 
-/* Supplier Information */
+stock_quantity,
+
 supplier_id
- 
 FROM {{ ref('product_data_silver') }}
