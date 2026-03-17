@@ -1,10 +1,10 @@
 {{ config(materialized='view') }}
  
 SELECT
-    c.campaign_type,
-    AVG(f.roi_percentage) AS average_roi_percentage
+    c.campaign_name,
+    SUM(f.total_sales_influenced) AS total_sales_generated
 FROM {{ ref('fact_marketingPerformance') }} f
 JOIN {{ ref('dim_campaign') }} c
 ON f.campaignkey = c.campaignkey
-GROUP BY c.campaign_type
-ORDER BY average_roi_percentage DESC
+GROUP BY c.campaign_name
+ORDER BY total_sales_generated DESC
