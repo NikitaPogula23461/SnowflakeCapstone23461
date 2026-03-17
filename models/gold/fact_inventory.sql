@@ -54,8 +54,7 @@ SELECT
     cost_price,
  
     CASE
-        WHEN (stock_quantity - sold_quantity) < reorder_level
-        THEN reorder_level - (stock_quantity - sold_quantity)
+        WHEN (stock_quantity - sold_quantity) < reorder_level THEN reorder_level - (stock_quantity - sold_quantity)
         ELSE 0
     END AS PurchasedQuantity
  
